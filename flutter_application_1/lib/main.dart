@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
 
 class MainScreen extends StatelessWidget {
   final String tableId = 'table_1';
-  final String secretKey = 'your_secret_key';
+  final String secretKey = '@tableserve_20+24';
 
   const MainScreen({super.key});
 
