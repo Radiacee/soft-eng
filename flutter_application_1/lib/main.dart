@@ -1,217 +1,77 @@
-import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_application_1/screens/guest_request/faq_screen.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'screens/guest_request/guest_request_screen.dart';
-import 'screens/guest_request/custom_request_screen.dart';
-import 'screens/qr_code/qr_code_screen.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'qr_code_generator.dart'; // Import the QR code generator
 
-// final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
-  final tableId = prefs.getString('tableId') ?? "";
-  final userName = prefs.getString('userName') ?? "Guest";
-
-  // Load environment variables and ensure it completes
-  await dotenv.load(fileName: "assets/.env");
-
-  // Initialize firebase
-  await Firebase.initializeApp(
-    options: FirebaseOptions(
-      apiKey: dotenv.env['apiKey']!,
-      appId: dotenv.env['appId']!,
-      messagingSenderId: dotenv.env['messagingSenderId']!,
-      projectId: dotenv.env['projectId']!,
-    ),
-  );
-
-  AwesomeNotifications().initialize(
-    'resource://drawable/ic_launcher', // Default icon for notifications
-    [
-      NotificationChannel(
-        channelKey: 'high_importance_channel',
-        channelName: 'High Importance Notifications',
-        channelDescription: 'This channel is used for important notifications.',
-        defaultColor: Color(0xFF9D50DD),
-        ledColor: Colors.white,
-        importance: NotificationImportance.High,
-      ),
-    ],
-  );
-
-  // Request notification permissions
-  await AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
-    if (!isAllowed) {
-      AwesomeNotifications().requestPermissionToSendNotifications();
-    }
-  });
-
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  // runZonedGuarded((){
-  //   runApp(const MyApp());
-  // },(error, stackTrace){
-  //   print("App forcefully closed.");
-  //   navigatorKey.currentState?.pop();
-  // });
-  runApp(MyApp(tableId: tableId, userName: userName));
-
-  _setupGlobalNotificationListener();
+void main() {
+  runApp(MyApp());
 }
 
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  AwesomeNotifications().createNotificationFromJsonData(message.data);
-}
-
-void _setupGlobalNotificationListener() {
-  FirebaseFirestore.instance
-      .collection('notifications')
-      .where('viewed', isEqualTo: false)
-      .snapshots()
-      .listen((QuerySnapshot snapshot) {
-    for (var change in snapshot.docChanges) {
-      if (change.type == DocumentChangeType.added) {
-        var data = change.doc.data() as Map<String, dynamic>;
-        _showLocalNotification(data);
-      }
-    }
-  });
-}
-
-void _showLocalNotification(Map<String, dynamic> data) {
-  if (data['type'] == null ||
-      data['requestType'] == null ||
-      data['status'] == null) {
-    return;
-  }
-
-  AwesomeNotifications().createNotification(
-    content: NotificationContent(
-      id: 10,
-      channelKey: 'high_importance_channel',
-      title: data['type'] == 'newMessage'
-          ? 'Message from Admin'
-          : 'Request: ${data['requestType']}',
-      body: data['type'] == 'newMessage'
-          ? data['message']
-          : 'Status: ${data['status']}',
-      notificationLayout: NotificationLayout.Default,
-      icon: 'resource://drawable/ic_launcher',
-    ),
-  );
-}
-
-class MyApp extends StatefulWidget {
-  final String tableId;
-  final String userName;
-
-  const MyApp({super.key, required this.tableId, required this.userName});
-
-  @override
-  MyAppState createState() => MyAppState();
-}
-
-class MyAppState extends State<MyApp> {
-  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
-  bool _isConnected = true;
-
-  @override
-  void initState() {
-    super.initState();
-    // Listen for connectivity changes.
-    _connectivitySubscription = Connectivity()
-        .onConnectivityChanged
-        .listen((ConnectivityResult result) {
-      // Update the connection status.
-      setState(() {
-        _isConnected = result != ConnectivityResult.none;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _connectivitySubscription.cancel();
-    super.dispose();
-  }
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'TableServe',
+      title: 'QR Code Generator',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        fontFamily: 'Poppins',
       ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => widget.tableId.isNotEmpty
-            ? GuestRequestScreen(tableId: widget.tableId, userName: widget.userName)
-            : const ScanScreen(),
-        '/qrCode': (context) => const ScanScreen(),
-        '/guestRequest': (context) => GuestRequestScreen(tableId: widget.tableId, userName: widget.userName),
-        '/customRequest': (context) => CustomRequestScreen(tableId: widget.tableId, userName: widget.userName),
-        '/faq': (context) => faqScreen(),
-      },
-      builder: (context, child) {
-        return Stack(
-          children: [
-            child!,
-            if (!_isConnected)
-              Container(
-                color: Colors.black54, // Semi-transparent background
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                      const SizedBox(height: 20),
-                      const Material(
-                        color: Colors.transparent,
-                        child: Text(
-                          'No internet connection. Retrying...',
-                          style: TextStyle(color: Colors.white, fontSize: 16),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
+      home: MainScreen(),
+    );
+  }
+}
+
+class MainScreen extends StatelessWidget {
+  final String tableId = 'table_1';
+  final String secretKey = 'your_secret_key';
+
+  const MainScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Main Screen'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () async {
+            String? filePath = await saveQRCode(tableId, secretKey);
+            if (filePath != null) {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('QR Code Preview'),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.file(File(filePath)),
+                        SizedBox(height: 20),
+                        Text('QR code saved to $filePath'),
+                      ],
+                    ),
+                    actions: [
                       TextButton(
                         onPressed: () {
-                          // Exit the app
-                          SystemNavigator.pop();
+                          Navigator.of(context).pop();
                         },
-                        style: TextButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 12, horizontal: 24),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                        child: const Text(
-                          'Exit',
-                          style: TextStyle(color: Colors.white, fontSize: 16),
-                        ),
+                        child: Text('OK'),
                       ),
                     ],
-                  ),
-                ),
-              ),
-          ],
-        );
-      },
+                  );
+                },
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Failed to generate QR code')),
+              );
+            }
+          },
+          child: Text('Generate and Save QR Code'),
+        ),
+      ),
     );
   }
 }
