@@ -46,9 +46,12 @@ class AdminMessagesScreenState extends State<AdminMessagesScreen>
 
     if (tableDoc.exists) {
       if ((tableDoc.data() as Map<String, dynamic>).containsKey('userNames')) {
-        List<dynamic> users = tableDoc['userNames'];
+        Map<String, dynamic> usersMap = tableDoc['userNames'];
         setState(() {
-          activeUsers = users.cast<String>();
+          activeUsers = usersMap.keys.map((key) {
+            // Extract userName from the format "userName: userEmail"
+            return key.split(':').first.trim();
+          }).toList();
           _tabController =
               TabController(length: activeUsers.length, vsync: this);
         });
@@ -68,7 +71,7 @@ class AdminMessagesScreenState extends State<AdminMessagesScreen>
     }
   }
 
-  void sendMessage(String userName) async {
+  void sendMessage(String userName, String userEmail) async {
     if (messageController.text.isNotEmpty) {
       String docName =
           'Admin Message - ${DateTime.now().millisecondsSinceEpoch}';
@@ -79,8 +82,8 @@ class AdminMessagesScreenState extends State<AdminMessagesScreen>
         'message': messageController.text,
         'timestamp': FieldValue.serverTimestamp(),
         'sender': 'admin',
-        'userName': userName, // Save the userName separately
-        'userEmail': widget.userEmail, // Save the userEmail separately
+        'userName':
+            "$userName: $userEmail", // Format userName as "userName: userEmail"
       });
 
       // Use a unique document ID for each notification
@@ -93,8 +96,9 @@ class AdminMessagesScreenState extends State<AdminMessagesScreen>
           .doc(notificationId)
           .set({
         'tableId': widget.tableId,
-        'userName': userName,
-        'userEmail': widget.userEmail, // Save the userEmail separately
+        'userName':
+            "$userName: $userEmail", // Format userName as "userName: userEmail"
+        'userEmail': userEmail, // Save the userEmail separately
         'type': 'newMessage',
         'message': messageController.text,
         'timestamp': FieldValue.serverTimestamp(),
@@ -139,7 +143,8 @@ class AdminMessagesScreenState extends State<AdminMessagesScreen>
                             .collection('messages')
                             .where('tableId', isEqualTo: widget.tableId)
                             .where('userName',
-                                isEqualTo: user) // Filter messages by userName
+                                isEqualTo:
+                                    "$user: ${widget.userEmail}") // Filter messages by userName in the correct format
                             .orderBy('timestamp',
                                 descending:
                                     false) // Order messages by timestamp
@@ -238,7 +243,7 @@ class AdminMessagesScreenState extends State<AdminMessagesScreen>
                           border: OutlineInputBorder(),
                         ),
                         onSubmitted: (text) {
-                          sendMessage(user);
+                          sendMessage(user, widget.userEmail);
                         },
                       ),
                     ),
@@ -255,7 +260,7 @@ class AdminMessagesScreenState extends State<AdminMessagesScreen>
                           ),
                           TextButton(
                             onPressed: () {
-                              sendMessage(user);
+                              sendMessage(user, widget.userEmail);
                             },
                             child: const Text("Send"),
                           ),

@@ -2019,16 +2019,21 @@ class RequestDetailsScreenState extends State<RequestDetailsScreen>
         .doc(widget.tableId)
         .get();
 
-    if (doc.exists &&
-        doc.data() != null &&
-        (doc.data() as Map<String, dynamic>).containsKey('userName')) {
-      setState(() {
-        userName = doc['userName'] ?? "Guest";
-      });
-    } else {
-      setState(() {
-        userName = "Guest";
-      });
+    if (doc.exists && doc.data() != null) {
+      var data = doc.data() as Map<String, dynamic>;
+      if (data.containsKey('userNames')) {
+        Map<String, dynamic> userNames = data['userNames'];
+        if (userNames.isNotEmpty) {
+          setState(() {
+            String userNameWithEmail = userNames.keys.first;
+            List<String> parts = userNameWithEmail.split(':');
+            if (parts.length == 2) {
+              userName = parts[0].trim();
+              userEmail = parts[1].trim();
+            }
+          });
+        }
+      }
     }
   }
 
