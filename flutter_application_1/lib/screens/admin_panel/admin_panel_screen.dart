@@ -51,6 +51,7 @@ class AdminPanelState extends State<AdminPanel> {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       _showLocalNotification(message.data);
     });
+    
   }
 
   void _listenForNotifications() {
@@ -2128,6 +2129,8 @@ class RequestDetailsScreenState extends State<RequestDetailsScreen>
   }
 
   void _showMessagesScreen(String userName, String userEmail) {
+    print(
+        "Navigating to AdminMessagesScreen with userName: $userName and userEmail: $userEmail");
     Navigator.push(
       context,
       MaterialPageRoute(

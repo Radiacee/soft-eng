@@ -20,9 +20,10 @@ class AdminMessagesScreen extends StatefulWidget {
 class AdminMessagesScreenState extends State<AdminMessagesScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  List<String> activeUsers = [];
+  List<Map<String, String>> activeUsers = [];
   final TextEditingController messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -35,6 +36,7 @@ class AdminMessagesScreenState extends State<AdminMessagesScreen>
     _tabController.dispose();
     messageController.dispose();
     _scrollController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -48,12 +50,17 @@ class AdminMessagesScreenState extends State<AdminMessagesScreen>
       if ((tableDoc.data() as Map<String, dynamic>).containsKey('userNames')) {
         Map<String, dynamic> usersMap = tableDoc['userNames'];
         setState(() {
-          activeUsers = usersMap.keys.map((key) {
-            // Extract userName from the format "userName: userEmail"
-            return key.split(':').first.trim();
-          }).toList();
-          _tabController =
-              TabController(length: activeUsers.length, vsync: this);
+          if (usersMap != null) {
+            activeUsers = usersMap.entries.map((entry) {
+              String userName = entry.key.trim();
+              String userEmail = entry.value.trim();
+              print("Extracted userName: $userName, userEmail: $userEmail"); // Debug print
+              return {'userName': userName, 'userEmail': userEmail};
+            }).toList();
+          } else {
+            activeUsers = [];
+          }
+          _tabController = TabController(length: activeUsers.length, vsync: this);
         });
       } else {
         // Handle the case where 'userNames' field does not exist
@@ -82,8 +89,7 @@ class AdminMessagesScreenState extends State<AdminMessagesScreen>
         'message': messageController.text,
         'timestamp': FieldValue.serverTimestamp(),
         'sender': 'admin',
-        'userName':
-            "$userName: $userEmail", // Format userName as "userName: userEmail"
+        'userName': "$userName: $userEmail", // Format userName as "userName: userEmail"
       });
 
       // Use a unique document ID for each notification
@@ -96,8 +102,7 @@ class AdminMessagesScreenState extends State<AdminMessagesScreen>
           .doc(notificationId)
           .set({
         'tableId': widget.tableId,
-        'userName':
-            "$userName: $userEmail", // Format userName as "userName: userEmail"
+        'userName': "$userName: $userEmail", // Format userName as "userName: userEmail"
         'userEmail': userEmail, // Save the userEmail separately
         'type': 'newMessage',
         'message': messageController.text,
@@ -127,7 +132,7 @@ class AdminMessagesScreenState extends State<AdminMessagesScreen>
             ? TabBar(
                 controller: _tabController,
                 isScrollable: true,
-                tabs: activeUsers.map((user) => Tab(text: user)).toList(),
+                tabs: activeUsers.map((user) => Tab(text: user['userName'])).toList(),
               )
             : null,
       ),
@@ -143,76 +148,54 @@ class AdminMessagesScreenState extends State<AdminMessagesScreen>
                             .collection('messages')
                             .where('tableId', isEqualTo: widget.tableId)
                             .where('userName',
-                                isEqualTo:
-                                    "$user: ${widget.userEmail}") // Filter messages by userName in the correct format
-                            .orderBy('timestamp',
-                                descending:
-                                    false) // Order messages by timestamp
+                                isEqualTo: "${user['userName']}: ${user['userEmail']}") // Filter messages by userName in the correct format
+                            .orderBy('timestamp', descending: false) // Order messages by timestamp
                             .snapshots(),
-                        builder:
-                            (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Center(
-                                child: CircularProgressIndicator());
+                        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
                           }
                           if (snapshot.hasError) {
                             print("Error loading messages: ${snapshot.error}");
-                            return const Center(
-                                child: Text("Error loading messages"));
+                            return const Center(child: Text("Error loading messages"));
                           }
-                          if (!snapshot.hasData ||
-                              snapshot.data!.docs.isEmpty) {
+                          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                             return const Center(child: Text("No messages"));
                           }
 
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             if (_scrollController.hasClients) {
-                              _scrollController.jumpTo(
-                                  _scrollController.position.maxScrollExtent);
+                              _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
                             }
                           });
 
                           return ListView(
                             controller: _scrollController,
-                            reverse:
-                                false, // Do not reverse the order of the messages
+                            reverse: false, // Do not reverse the order of the messages
                             children: snapshot.data!.docs.map((doc) {
                               var message = doc.data() as Map<String, dynamic>;
                               bool isAdmin = message['sender'] == 'admin';
-                              Timestamp? timestamp =
-                                  message['timestamp'] as Timestamp?;
+                              Timestamp? timestamp = message['timestamp'] as Timestamp?;
                               return Column(
-                                crossAxisAlignment: isAdmin
-                                    ? CrossAxisAlignment.end
-                                    : CrossAxisAlignment.start,
+                                crossAxisAlignment: isAdmin ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                                 children: [
                                   const SizedBox(height: 5),
                                   Align(
-                                    alignment: isAdmin
-                                        ? Alignment.centerRight
-                                        : Alignment.centerLeft,
+                                    alignment: isAdmin ? Alignment.centerRight : Alignment.centerLeft,
                                     child: Container(
-                                      margin: const EdgeInsets.symmetric(
-                                          vertical: 5.0, horizontal: 10.0),
+                                      margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
                                       padding: const EdgeInsets.all(10.0),
                                       decoration: BoxDecoration(
-                                        color: isAdmin
-                                            ? Colors.blue[100]
-                                            : Colors.grey[300],
-                                        borderRadius:
-                                            BorderRadius.circular(10.0),
+                                        color: isAdmin ? Colors.blue[100] : Colors.grey[300],
+                                        borderRadius: BorderRadius.circular(10.0),
                                       ),
                                       child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             message['message'],
                                             style: TextStyle(
-                                              color: isAdmin
-                                                  ? Colors.black
-                                                  : Colors.black,
+                                              color: isAdmin ? Colors.black : Colors.black,
                                             ),
                                           ),
                                           if (timestamp != null)
@@ -234,18 +217,33 @@ class AdminMessagesScreenState extends State<AdminMessagesScreen>
                         },
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: TextField(
-                        controller: messageController,
-                        decoration: const InputDecoration(
-                          labelText: 'Message',
-                          border: OutlineInputBorder(),
-                        ),
-                        onSubmitted: (text) {
-                          sendMessage(user, widget.userEmail);
-                        },
-                      ),
+                    ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: messageController,
+                      builder: (context, value, child) {
+                        return TextField(
+                          controller: messageController,
+                          focusNode: _focusNode,
+                          decoration: const InputDecoration(
+                            labelText: 'Message',
+                            border: OutlineInputBorder(),
+                          ),
+                          onChanged: (text) {
+                            print("FocusNode has focus: ${_focusNode.hasFocus}");
+                          },
+                          onTap: () {
+                            if (!_focusNode.hasFocus) {
+                              _focusNode.requestFocus();
+                            }
+                          },
+                          onSubmitted: (text) {
+                            int currentIndex = _tabController.index;
+                            String userName = activeUsers[currentIndex]['userName']!;
+                            String userEmail = activeUsers[currentIndex]['userEmail']!;
+                            sendMessage(userName, userEmail);
+                            _focusNode.unfocus();
+                          },
+                        );
+                      },
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -260,7 +258,11 @@ class AdminMessagesScreenState extends State<AdminMessagesScreen>
                           ),
                           TextButton(
                             onPressed: () {
-                              sendMessage(user, widget.userEmail);
+                              int currentIndex = _tabController.index;
+                              String userName = activeUsers[currentIndex]['userName']!;
+                              String userEmail = activeUsers[currentIndex]['userEmail']!;
+                              sendMessage(userName, userEmail);
+                              _focusNode.unfocus();
                             },
                             child: const Text("Send"),
                           ),
