@@ -1995,6 +1995,7 @@ class RequestDetailsScreen extends StatefulWidget {
 class RequestDetailsScreenState extends State<RequestDetailsScreen>
     with SingleTickerProviderStateMixin {
   String userName = "Guest";
+  String userEmail = "";
   late TabController _tabController;
   String? _selectedTableId;
 
@@ -2121,12 +2122,15 @@ class RequestDetailsScreenState extends State<RequestDetailsScreen>
     }
   }
 
-  void _showMessagesScreen(String userName) {
+  void _showMessagesScreen(String userName, String userEmail) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            AdminMessagesScreen(tableId: widget.tableId, userName: userName),
+        builder: (context) => AdminMessagesScreen(
+          tableId: widget.tableId,
+          userName: userName,
+          userEmail: userEmail,
+        ),
       ),
     );
   }
@@ -2662,7 +2666,7 @@ class RequestDetailsScreenState extends State<RequestDetailsScreen>
         child: Padding(
           padding: const EdgeInsets.all(30.0), // Adjust the padding as needed
           child: FloatingActionButton(
-            onPressed: () => _showMessagesScreen(userName),
+            onPressed: () => _showMessagesScreen(userName, userEmail),
             backgroundColor: Colors.white,
             child: const Icon(Icons.message),
           ),

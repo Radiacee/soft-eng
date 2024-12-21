@@ -3,9 +3,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AdminMessagesScreen extends StatefulWidget {
   final String tableId;
+  final String userName;
+  final String userEmail;
 
-  const AdminMessagesScreen(
-      {required this.tableId, super.key, required String userName});
+  const AdminMessagesScreen({
+    required this.tableId,
+    required this.userName,
+    required this.userEmail,
+    super.key,
+  });
 
   @override
   AdminMessagesScreenState createState() => AdminMessagesScreenState();
@@ -74,6 +80,7 @@ class AdminMessagesScreenState extends State<AdminMessagesScreen>
         'timestamp': FieldValue.serverTimestamp(),
         'sender': 'admin',
         'userName': userName, // Save the userName separately
+        'userEmail': widget.userEmail, // Save the userEmail separately
       });
 
       // Use a unique document ID for each notification
@@ -87,6 +94,7 @@ class AdminMessagesScreenState extends State<AdminMessagesScreen>
           .set({
         'tableId': widget.tableId,
         'userName': userName,
+        'userEmail': widget.userEmail, // Save the userEmail separately
         'type': 'newMessage',
         'message': messageController.text,
         'timestamp': FieldValue.serverTimestamp(),
