@@ -69,6 +69,40 @@ class LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _forgotPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter your email")),
+      );
+      return;
+    }
+    try {
+      // Send password reset email regardless of email registration status
+      await _auth.sendPasswordResetEmail(email: email);
+      // Display a generic message for security
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("A password reset link has been sent to the email."),
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'invalid-email') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please enter a valid email address.")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: ${e.message}")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("An unexpected error occurred")),
+      );
+    }
+  }
+
   Future<bool> checkIfAdmin() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -161,6 +195,14 @@ class LoginScreenState extends State<LoginScreen> {
                     ),
                     obscureText: !_isPasswordVisible,
                   ),
+                  const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: _forgotPassword,
+                        child: Text("Forgot password?"),
+                      ),
+                    ),
                   const SizedBox(height: 16),
                   _isLoading
                       ? CircularProgressIndicator() // Show loading indicator
