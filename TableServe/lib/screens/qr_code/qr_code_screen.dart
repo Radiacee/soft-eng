@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
@@ -26,11 +28,11 @@ class PasswordVisibilityToggle extends StatefulWidget {
   });
 
   @override
-  _PasswordVisibilityToggleState createState() =>
-      _PasswordVisibilityToggleState();
+  PasswordVisibilityToggleState createState() =>
+      PasswordVisibilityToggleState();
 }
 
-class _PasswordVisibilityToggleState extends State<PasswordVisibilityToggle> {
+class PasswordVisibilityToggleState extends State<PasswordVisibilityToggle> {
   bool _isObscure = true;
 
   @override
@@ -226,37 +228,13 @@ class ScanScreenState extends State<ScanScreen> {
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       // Show dialog to prompt the user to enable location services
-      await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Location Services Disabled'),
-            content: Text('Please enable location services to continue.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-      return Future.error('Location services are disabled.');
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        // Show dialog to prompt the user to grant location permissions
+      if (mounted) {
         await showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text('Location Permission Denied'),
-              content: Text('Please grant location permissions to continue.'),
+              title: Text('Location Services Disabled'),
+              content: Text('Please enable location services to continue.'),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -268,30 +246,60 @@ class ScanScreenState extends State<ScanScreen> {
             );
           },
         );
+      }
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // Show dialog to prompt the user to grant location permissions
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Location Permission Denied'),
+                content: Text('Please grant location permissions to continue.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
         return Future.error('Location permissions are denied');
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
       // Show dialog to inform the user that permissions are permanently denied
-      await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Location Permission Permanently Denied'),
-            content: Text(
-                'Location permissions are permanently denied. Please enable them in settings.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
+      if (mounted) {
+        await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Location Permission Permanently Denied'),
+              content: Text(
+                  'Location permissions are permanently denied. Please enable them in settings.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
     }
@@ -320,7 +328,8 @@ class ScanScreenState extends State<ScanScreen> {
         return AlertDialog(
           title: Text('Reset Password'),
           content: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.8, // 80% of screen width
+            width:
+                MediaQuery.of(context).size.width * 0.8, // 80% of screen width
             child: TextField(
               controller: resetEmailController,
               keyboardType: TextInputType.emailAddress,
@@ -353,7 +362,9 @@ class ScanScreenState extends State<ScanScreen> {
                   return;
                 }
                 try {
-                  await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+                  await FirebaseAuth.instance
+                      .sendPasswordResetEmail(email: email);
+                  // ignore: use_build_context_synchronously
                   Navigator.of(context).pop();
                   Fluttertoast.showToast(
                     msg: "Password reset email sent.",
@@ -381,7 +392,6 @@ class ScanScreenState extends State<ScanScreen> {
       },
     );
   }
-
 
   Future<User?> _signInWithGoogle() async {
     try {
@@ -458,7 +468,6 @@ class ScanScreenState extends State<ScanScreen> {
   }
 
   Future<User?> _signUpWithEmailAndPassword(
-    
       String email, String password) async {
     try {
       final UserCredential userCredential =
@@ -600,7 +609,7 @@ class ScanScreenState extends State<ScanScreen> {
       try {
         // Get tableId from scanned QR code if not provided
         String scannedTableId = tableId ?? scanData.code ?? '';
-        print("Scanned QR code: $scannedTableId");
+        log("Scanned QR code: $scannedTableId" as num);
 
         Position userLocation = await _getCurrentLocation();
         double targetLatitude = 14.856759; // Replace with your target latitude
@@ -644,28 +653,30 @@ class ScanScreenState extends State<ScanScreen> {
 
           String finalUserName = userName ?? user.displayName ?? "Guest";
           String userEmail = user.email ?? "unknown";
-          String uniqueUserName = "$finalUserName";
+          String uniqueUserName = finalUserName;
 
-          // Show loading dialog
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                content: Padding(
-                  padding: const EdgeInsets.only(top: 17.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 20),
-                      Text("Logging in, please wait..."),
-                    ],
+          if (mounted) {
+            // Show loading dialog
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  content: Padding(
+                    padding: const EdgeInsets.only(top: 17.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 20),
+                        Text("Logging in, please wait..."),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
-          );
+                );
+              },
+            );
+          }
 
           // Add the user to the list of users for the table
           DocumentReference tableRef = FirebaseFirestore.instance
@@ -684,7 +695,7 @@ class ScanScreenState extends State<ScanScreen> {
             } else if (userNames is Map) {
               userNamesMap = Map<String, dynamic>.from(userNames);
             }
-            print("Existing userNames: $userNamesMap");
+            log("Existing userNames: $userNamesMap" as num);
           }
 
           userNamesMap[uniqueUserName] = userEmail;
@@ -693,7 +704,7 @@ class ScanScreenState extends State<ScanScreen> {
             'timestamp': Timestamp.now(),
             'userNames': userNamesMap,
           }, SetOptions(merge: true));
-          print("Updated userNames: $userNamesMap");
+          log("Updated userNames: $userNamesMap" as num);
 
           // Save tableId and userName to shared preferences
           final prefs = await SharedPreferences.getInstance();
@@ -745,15 +756,17 @@ class ScanScreenState extends State<ScanScreen> {
           });
 
           // Navigate to GuestRequestScreen and pass the tableId and userName
-          Navigator.pushReplacementNamed(
-            context,
-            '/guestRequest',
-            arguments: {
-              'tableId': scannedTableId,
-              'userName': finalUserName,
-              'userEmail': userEmail,
-            }, // Pass the tableId and userName here
-          );
+          if (mounted) {
+            Navigator.pushReplacementNamed(
+              context,
+              '/guestRequest',
+              arguments: {
+                'tableId': scannedTableId,
+                'userName': finalUserName,
+                'userEmail': userEmail,
+              }, // Pass the tableId and userName here
+            );
+          }
         } else {
           // Show error if tableId is invalid
           Fluttertoast.showToast(
@@ -767,7 +780,7 @@ class ScanScreenState extends State<ScanScreen> {
           );
         }
       } catch (e) {
-        print("Error saving to Firebase: $e");
+        log("Error saving to Firebase: $e" as num);
         Fluttertoast.showToast(
           msg: "Error processing QR Code: $e",
           toastLength: Toast.LENGTH_SHORT,
@@ -897,9 +910,9 @@ class ScanScreenState extends State<ScanScreen> {
                                 Align(
                                   alignment: Alignment.centerRight,
                                   child: TextButton(
-                                  onPressed: _forgotPassword,
-                                  child: Text("Forgot password?"),
-                                ),
+                                    onPressed: _forgotPassword,
+                                    child: Text("Forgot password?"),
+                                  ),
                                 ),
                               SizedBox(height: 25),
                               ElevatedButton(
@@ -958,6 +971,7 @@ class ScanScreenState extends State<ScanScreen> {
                                       String userName = user.displayName ??
                                           user.email ??
                                           "Guest";
+                                      // ignore: use_build_context_synchronously
                                       Navigator.of(context).pop(user);
                                       _onQRViewCreated(controller!, userName,
                                           scannedTableId);
@@ -1019,6 +1033,7 @@ class ScanScreenState extends State<ScanScreen> {
                                     String userName = user.displayName ??
                                         user.email ??
                                         "Guest";
+                                    // ignore: use_build_context_synchronously
                                     Navigator.of(context).pop(user);
                                     _onQRViewCreated(
                                         controller!, userName, scannedTableId);
@@ -1066,32 +1081,6 @@ class ScanScreenState extends State<ScanScreen> {
           ],
         );
       },
-    );
-  }
-
-  Widget _buildThemedTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-  }) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: Colors.white),
-        prefixIcon: Icon(icon, color: Colors.white),
-        filled: true,
-        fillColor: Colors.teal[800]!.withOpacity(0.6),
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.teal[400]!),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.tealAccent),
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-      style: TextStyle(color: Colors.white),
     );
   }
 }

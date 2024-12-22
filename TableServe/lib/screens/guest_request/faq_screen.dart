@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class faqScreen extends StatefulWidget {
-  const faqScreen({super.key});
+class FaqScreen extends StatefulWidget {
+  const FaqScreen({super.key});
 
   @override
-  faqScreenState createState() => faqScreenState();
+  FaqScreenState createState() => FaqScreenState();
 }
 
-class faqScreenState extends State<faqScreen> {
+class FaqScreenState extends State<FaqScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

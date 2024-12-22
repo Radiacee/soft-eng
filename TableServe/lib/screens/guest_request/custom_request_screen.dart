@@ -136,16 +136,20 @@ class CustomRequestScreenState extends State<CustomRequestScreen> {
       customRequestController.clear();
 
       // Navigate to the GuestRequestScreen after submission
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (context) => GuestRequestScreen(
-            tableId: widget.tableId,
-            userName: uniqueUserName, userEmail: userEmail,
+      if (mounted) {
+        // Navigate to the GuestRequestScreen after submission
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GuestRequestScreen(
+              tableId: widget.tableId,
+              userName: uniqueUserName,
+              userEmail: userEmail,
+            ),
           ),
-        ),
-        (Route<dynamic> route) => false,
-      );
+          (Route<dynamic> route) => false,
+        );
+      }
     } catch (e) {
       Fluttertoast.showToast(
           msg: "Failed to submit request: $e.",
@@ -157,7 +161,7 @@ class CustomRequestScreenState extends State<CustomRequestScreen> {
           fontSize: 16.0);
     } finally {
       // Dismiss the loading dialog if it is still visible
-      if (Navigator.of(context).canPop()) {
+      if (mounted && Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
       }
     }

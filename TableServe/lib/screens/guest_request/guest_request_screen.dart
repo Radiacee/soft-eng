@@ -105,9 +105,6 @@ class GuestRequestScreenState extends State<GuestRequestScreen>
     Timer.periodic(Duration(seconds: 1), (timer) {
       _checkLoginExpiry();
     });
-
-    print("uniqueUserName: $uniqueUserName");
-    print("tableId: $tableId");
   }
 
   void _initializeLocalNotifications() {
@@ -274,7 +271,7 @@ class GuestRequestScreenState extends State<GuestRequestScreen>
         requestInformation = fetchedRequestInformation;
       });
     } catch (e) {
-      print('Error fetching request data: $e');
+      log('Error fetching request data: $e');
     }
   }
 
@@ -366,7 +363,7 @@ class GuestRequestScreenState extends State<GuestRequestScreen>
       List<String> items = List<String>.from(snapshot.data()?['items'] ?? []);
       return items;
     } catch (e) {
-      print("Error fetching items: $e");
+      log("Error fetching items: $e");
       return [];
     }
   }
@@ -374,216 +371,223 @@ class GuestRequestScreenState extends State<GuestRequestScreen>
   void _showRequestHistoryDialog() async {
     await _fetchRequestHistory(); // Fetch the latest request history
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(16.0),
-            height: MediaQuery.of(context).size.height * 0.8,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Your Requests',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF316175),
+    if (mounted) {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) {
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(16.0),
+              height: MediaQuery.of(context).size.height * 0.8,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Your Requests',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF316175),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16.0),
-                Expanded(
-                  child: StatefulBuilder(
-                    builder: (BuildContext context, StateSetter setState) {
-                      return requestHistory.isEmpty
-                          ? Center(
-                              child: Text(
-                                'No Request Found',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            )
-                          : ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: requestHistory.length,
-                              itemBuilder: (context, index) {
-                                var request = requestHistory[index];
-                                var timestamp =
-                                    (request['timestamp'] as Timestamp)
-                                        .toDate();
-                                return Card(
-                                  margin: EdgeInsets.symmetric(vertical: 8.0),
-                                  elevation: 3,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                  const SizedBox(height: 16.0),
+                  Expanded(
+                    child: StatefulBuilder(
+                      builder: (BuildContext context, StateSetter setState) {
+                        return requestHistory.isEmpty
+                            ? Center(
+                                child: Text(
+                                  'No Request Found',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey[600],
                                   ),
-                                  child: ListTile(
-                                    contentPadding: EdgeInsets.symmetric(
-                                      vertical: 10.0,
-                                      horizontal: 16.0,
+                                ),
+                              )
+                            : ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: requestHistory.length,
+                                itemBuilder: (context, index) {
+                                  var request = requestHistory[index];
+                                  var timestamp =
+                                      (request['timestamp'] as Timestamp)
+                                          .toDate();
+                                  return Card(
+                                    margin: EdgeInsets.symmetric(vertical: 8.0),
+                                    elevation: 3,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
-                                    title: Text(
-                                      request['requestType'],
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF316175),
+                                    child: ListTile(
+                                      contentPadding: EdgeInsets.symmetric(
+                                        vertical: 10.0,
+                                        horizontal: 16.0,
+                                      ),
+                                      title: Text(
+                                        request['requestType'],
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF316175),
+                                        ),
+                                      ),
+                                      subtitle: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Status: ${request['status']}',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: Colors.grey[600],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4.0),
+                                          Text(
+                                            'Time: ${DateFormat('yyyy-MM-dd – kk:mm').format(timestamp)}',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.grey[500],
+                                            ),
+                                          ),
+                                          if (request['status'] == 'rejected' &&
+                                              request.containsKey('remarks'))
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const SizedBox(height: 4.0),
+                                                Text(
+                                                  'Remarks: ${request['remarks']}',
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.red,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                        ],
+                                      ),
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          if (request['status'] != 'done' &&
+                                              request['status'] != 'accepted' &&
+                                              request['status'] != 'canceled')
+                                            IconButton(
+                                              icon: Icon(Icons.cancel,
+                                                  color: Colors.red),
+                                              onPressed: () async {
+                                                bool? confirmDelete =
+                                                    await showDialog<bool>(
+                                                  context: context,
+                                                  builder:
+                                                      (BuildContext context) {
+                                                    return AlertDialog(
+                                                      title: const Text(
+                                                          "Confirm Cancel"),
+                                                      content: const Text(
+                                                          "Are you sure you want to cancel this request?"),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: () =>
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop(false),
+                                                          child:
+                                                              const Text("No"),
+                                                        ),
+                                                        TextButton(
+                                                          onPressed: () =>
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop(true),
+                                                          child: const Text(
+                                                              "Yes",
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .red)),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                );
+
+                                                if (confirmDelete == true) {
+                                                  // Update the status and timestamp
+                                                  await _updateRequestStatus(
+                                                      request['docId'],
+                                                      'canceled');
+
+                                                  // Notify the admin
+                                                  await FirebaseFirestore
+                                                      .instance
+                                                      .collection(
+                                                          'adminNotifications')
+                                                      .add({
+                                                    'type': 'requestCanceled',
+                                                    'message':
+                                                        'Request "${request['requestType']}" from user "${request['userName']}" at table "${request['tableId']}" has been canceled.',
+                                                    'timestamp': FieldValue
+                                                        .serverTimestamp(),
+                                                    'viewed': false,
+                                                  });
+
+                                                  await _fetchRequestHistory(); // Refresh the request history
+                                                  if (mounted) {
+                                                    setState(
+                                                        () {}); // Update the state to reflect the changes
+                                                  }
+                                                  Fluttertoast.showToast(
+                                                      msg:
+                                                          "Request Cancelled successfully.",
+                                                      toastLength:
+                                                          Toast.LENGTH_SHORT,
+                                                      gravity:
+                                                          ToastGravity.BOTTOM,
+                                                      timeInSecForIosWeb: 1,
+                                                      backgroundColor:
+                                                          Colors.green,
+                                                      textColor: Colors.white,
+                                                      fontSize: 16.0);
+                                                }
+                                              },
+                                            ),
+                                        ],
                                       ),
                                     ),
-                                    subtitle: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Status: ${request['status']}',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            color: Colors.grey[600],
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4.0),
-                                        Text(
-                                          'Time: ${DateFormat('yyyy-MM-dd – kk:mm').format(timestamp)}',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.grey[500],
-                                          ),
-                                        ),
-                                        if (request['status'] == 'rejected' &&
-                                            request.containsKey('remarks'))
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const SizedBox(height: 4.0),
-                                              Text(
-                                                'Remarks: ${request['remarks']}',
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.red,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                      ],
-                                    ),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        if (request['status'] != 'done' &&
-                                            request['status'] != 'accepted' &&
-                                            request['status'] != 'canceled')
-                                          IconButton(
-                                            icon: Icon(Icons.cancel,
-                                                color: Colors.red),
-                                            onPressed: () async {
-                                              bool? confirmDelete =
-                                                  await showDialog<bool>(
-                                                context: context,
-                                                builder:
-                                                    (BuildContext context) {
-                                                  return AlertDialog(
-                                                    title: const Text(
-                                                        "Confirm Cancel"),
-                                                    content: const Text(
-                                                        "Are you sure you want to cancel this request?"),
-                                                    actions: [
-                                                      TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop(false),
-                                                        child: const Text("No"),
-                                                      ),
-                                                      TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop(true),
-                                                        child: const Text("Yes",
-                                                            style: TextStyle(
-                                                                color: Colors
-                                                                    .red)),
-                                                      ),
-                                                    ],
-                                                  );
-                                                },
-                                              );
-
-                                              if (confirmDelete == true) {
-                                                // Update the status and timestamp
-                                                await _updateRequestStatus(
-                                                    request['docId'],
-                                                    'canceled');
-
-                                                // Notify the admin
-                                                await FirebaseFirestore.instance
-                                                    .collection(
-                                                        'adminNotifications')
-                                                    .add({
-                                                  'type': 'requestCanceled',
-                                                  'message':
-                                                      'Request "${request['requestType']}" from user "${request['userName']}" at table "${request['tableId']}" has been canceled.',
-                                                  'timestamp': FieldValue
-                                                      .serverTimestamp(),
-                                                  'viewed': false,
-                                                });
-
-                                                await _fetchRequestHistory(); // Refresh the request history
-                                                setState(
-                                                    () {}); // Update the state to reflect the changes
-                                                Fluttertoast.showToast(
-                                                    msg:
-                                                        "Request Cancelled successfully.",
-                                                    toastLength:
-                                                        Toast.LENGTH_SHORT,
-                                                    gravity:
-                                                        ToastGravity.BOTTOM,
-                                                    timeInSecForIosWeb: 1,
-                                                    backgroundColor:
-                                                        Colors.green,
-                                                    textColor: Colors.white,
-                                                    fontSize: 16.0);
-                                              }
-                                            },
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
-                    },
+                                  );
+                                },
+                              );
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16.0),
-                Center(
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text(
-                      'Close',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF316175),
+                  const SizedBox(height: 16.0),
+                  Center(
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(
+                        'Close',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF316175),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
-    );
+          );
+        },
+      );
+    }
   }
 
   Future<void> _updateRequestStatus(String docId, String newStatus) async {
@@ -595,7 +599,6 @@ class GuestRequestScreenState extends State<GuestRequestScreen>
       'timestamp': FieldValue.serverTimestamp(),
     });
   }
-
 
   Future<void> _submitRequest() async {
     List<Map<String, dynamic>> selectedRequests = [];
@@ -770,7 +773,9 @@ class GuestRequestScreenState extends State<GuestRequestScreen>
           fontSize: 16.0);
     } finally {
       // Dismiss the loading dialog
-      Navigator.of(context).pop();
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
     }
   }
 
@@ -974,7 +979,7 @@ class GuestRequestScreenState extends State<GuestRequestScreen>
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => faqScreen(),
+                      builder: (context) => FaqScreen(),
                     ),
                   );
                 },
@@ -996,7 +1001,7 @@ class GuestRequestScreenState extends State<GuestRequestScreen>
                     .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (snapshot.hasData) {
-                    print(uniqueUserName);
+                    log(uniqueUserName);
                     if (snapshot.data!.docs.isNotEmpty) {
                       return IconButton(
                         icon: Stack(
@@ -1035,16 +1040,18 @@ class GuestRequestScreenState extends State<GuestRequestScreen>
                             }
                             await batch.commit();
 
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => NotificationScreen(
-                                  tableId: tableId,
-                                  userName: userName,
-                                  userEmail: userEmail,
+                            if (mounted) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => NotificationScreen(
+                                    tableId: tableId,
+                                    userName: userName,
+                                    userEmail: userEmail,
+                                  ),
                                 ),
-                              ),
-                            );
+                              );
+                            }
                           } else {
                             Fluttertoast.showToast(
                                 msg: "No Table ID available.",

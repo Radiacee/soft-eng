@@ -123,7 +123,7 @@ class MyAppState extends State<MyApp> {
         '/qrCode': (context) => const ScanScreen(),
         '/guestRequest': (context) => GuestRequestScreen(tableId: widget.tableId, userName: widget.userName, userEmail: widget.userEmail),
         '/customRequest': (context) => CustomRequestScreen(tableId: widget.tableId, userName: widget.userName),
-        '/faq': (context) => faqScreen(),
+        '/faq': (context) => FaqScreen(),
       },
       builder: (context, child) {
         return Stack(
