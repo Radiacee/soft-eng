@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
@@ -361,20 +359,42 @@ class ScanScreenState extends State<ScanScreen> {
                   );
                   return;
                 }
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      content: Row(
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(width: 20),
+                          Text("Sending reset link..."),
+                        ],
+                      ),
+                    );
+                  },
+                );
                 try {
                   await FirebaseAuth.instance
                       .sendPasswordResetEmail(email: email);
-                  // ignore: use_build_context_synchronously
-                  Navigator.of(context).pop();
-                  Fluttertoast.showToast(
-                    msg: "Password reset email sent.",
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    backgroundColor: Colors.green,
-                    textColor: Colors.white,
-                    fontSize: 16.0,
-                  );
+                  if (mounted) {
+                    // ignore: use_build_context_synchronously
+                    Navigator.of(context).pop(); // Close the loading dialog
+                    // ignore: use_build_context_synchronously
+                    Navigator.of(context)
+                        .pop(); // Close the reset password dialog
+                    Fluttertoast.showToast(
+                      msg: "Password reset email sent.",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.BOTTOM,
+                      backgroundColor: Colors.green,
+                      textColor: Colors.white,
+                      fontSize: 16.0,
+                    );
+                  }
                 } catch (e) {
+                  // ignore: use_build_context_synchronously
+                  Navigator.of(context).pop(); // Close the loading dialog
                   Fluttertoast.showToast(
                     msg: "Error: ${e.toString()}",
                     toastLength: Toast.LENGTH_SHORT,
@@ -609,7 +629,6 @@ class ScanScreenState extends State<ScanScreen> {
       try {
         // Get tableId from scanned QR code if not provided
         String scannedTableId = tableId ?? scanData.code ?? '';
-        log("Scanned QR code: $scannedTableId" as num);
 
         Position userLocation = await _getCurrentLocation();
         double targetLatitude = 14.856759; // Replace with your target latitude
@@ -695,7 +714,6 @@ class ScanScreenState extends State<ScanScreen> {
             } else if (userNames is Map) {
               userNamesMap = Map<String, dynamic>.from(userNames);
             }
-            log("Existing userNames: $userNamesMap" as num);
           }
 
           userNamesMap[uniqueUserName] = userEmail;
@@ -704,7 +722,6 @@ class ScanScreenState extends State<ScanScreen> {
             'timestamp': Timestamp.now(),
             'userNames': userNamesMap,
           }, SetOptions(merge: true));
-          log("Updated userNames: $userNamesMap" as num);
 
           // Save tableId and userName to shared preferences
           final prefs = await SharedPreferences.getInstance();
@@ -780,7 +797,6 @@ class ScanScreenState extends State<ScanScreen> {
           );
         }
       } catch (e) {
-        log("Error saving to Firebase: $e" as num);
         Fluttertoast.showToast(
           msg: "Error processing QR Code: $e",
           toastLength: Toast.LENGTH_SHORT,

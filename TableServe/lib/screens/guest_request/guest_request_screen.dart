@@ -1042,6 +1042,7 @@ class GuestRequestScreenState extends State<GuestRequestScreen>
 
                             if (mounted) {
                               Navigator.push(
+                                // ignore: use_build_context_synchronously
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => NotificationScreen(
@@ -1187,6 +1188,7 @@ class GuestRequestScreenState extends State<GuestRequestScreen>
                       onTap: () async {
                         List<String> items =
                             await _fetchItemsFromFirestore(requestTypes[index]);
+                        // ignore: unrelated_type_equality_checks
                         if (items.isEmpty || items == "null") {
                           setState(() {
                             selectedItems[index] = !selectedItems[index];
@@ -1269,6 +1271,7 @@ class GuestRequestScreenState extends State<GuestRequestScreen>
                                 borderRadius: BorderRadius.circular(30.0),
                                 boxShadow: [
                                   BoxShadow(
+                                    // ignore: deprecated_member_use
                                     color: Colors.grey.withOpacity(0.3),
                                     spreadRadius: 1,
                                     blurRadius: 3,

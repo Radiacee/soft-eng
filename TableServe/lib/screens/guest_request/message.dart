@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -23,10 +21,6 @@ class MessagesScreen extends StatelessWidget {
     void sendMessage() async {
       if (messageController.text.isNotEmpty) {
         String docName = 'Guest Message - ${DateTime.now().millisecondsSinceEpoch}';
-
-        // Debugging print statements
-        log("Sending message with uniqueUserName: $uniqueUserName" as num);
-        log("Message: ${messageController.text}" as num);
 
         // Save the message to the new 'messages' collection
         await FirebaseFirestore.instance
@@ -71,7 +65,6 @@ class MessagesScreen extends StatelessWidget {
                 }
                 if (snapshot.hasError) {
                   // Log the error for debugging
-                  log("Error loading messages: ${snapshot.error}" as num);
                   return const Center(child: Text("Error loading messages"));
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
