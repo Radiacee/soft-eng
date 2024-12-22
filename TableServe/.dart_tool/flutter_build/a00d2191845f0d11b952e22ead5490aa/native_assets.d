@@ -1,0 +1,1 @@
+ C:\\Users\\Dave\\Desktop\\BANLUTA\\soft-eng\\TableServe\\.dart_tool\\flutter_build\\a00d2191845f0d11b952e22ead5490aa\\native_assets.yaml: 

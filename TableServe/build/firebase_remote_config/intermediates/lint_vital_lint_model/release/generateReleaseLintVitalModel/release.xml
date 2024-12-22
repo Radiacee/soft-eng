@@ -1,0 +1,31 @@
+<variant
+    name="release"
+    package="io.flutter.plugins.firebase.firebaseremoteconfig"
+    minSdkVersion="21"
+    targetSdkVersion="21"
+    mergedManifest="C:\Users\Dave\Desktop\BANLUTA\soft-eng\flutter_application_1\build\firebase_remote_config\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml"
+    manifestMergeReport="C:\Users\Dave\Desktop\BANLUTA\soft-eng\flutter_application_1\build\firebase_remote_config\outputs\logs\manifest-merger-release-report.txt"
+    proguardFiles="C:\Users\Dave\Desktop\BANLUTA\soft-eng\flutter_application_1\build\firebase_remote_config\intermediates\default_proguard_files\global\proguard-android.txt-8.3.2"
+    partialResultsDir="C:\Users\Dave\Desktop\BANLUTA\soft-eng\flutter_application_1\build\firebase_remote_config\intermediates\lint_vital_partial_results\release\lintVitalAnalyzeRelease\out">
+  <buildFeatures
+      namespacing="REQUIRED"/>
+  <sourceProviders>
+    <sourceProvider
+        manifests="src\main\AndroidManifest.xml"
+        javaDirectories="src\main\java;src\release\java;src\main\kotlin;src\release\kotlin"
+        resDirectories="src\main\res;src\release\res"
+        assetsDirectories="src\main\assets;src\release\assets"/>
+  </sourceProviders>
+  <testSourceProviders>
+  </testSourceProviders>
+  <testFixturesSourceProviders>
+  </testFixturesSourceProviders>
+  <artifact
+      classOutputs="C:\Users\Dave\Desktop\BANLUTA\soft-eng\flutter_application_1\build\firebase_remote_config\intermediates\javac\release\compileReleaseJavaWithJavac\classes;C:\Users\Dave\Desktop\BANLUTA\soft-eng\flutter_application_1\build\firebase_remote_config\intermediates\compile_r_class_jar\release\generateReleaseRFile\R.jar"
+      type="MAIN"
+      applicationId="io.flutter.plugins.firebase.firebaseremoteconfig"
+      generatedSourceFolders="C:\Users\Dave\Desktop\BANLUTA\soft-eng\flutter_application_1\build\firebase_remote_config\generated\ap_generated_sources\release\out;C:\Users\Dave\Desktop\BANLUTA\soft-eng\flutter_application_1\build\firebase_remote_config\generated\source\buildConfig\release"
+      generatedResourceFolders="C:\Users\Dave\Desktop\BANLUTA\soft-eng\flutter_application_1\build\firebase_remote_config\generated\res\resValues\release"
+      desugaredMethodsFiles="C:\Users\Dave\.gradle\caches\8.10.2\transforms\6250279facef7abb02fec38f1109cced\transformed\D8BackportedDesugaredMethods.txt">
+  </artifact>
+</variant>

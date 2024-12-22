@@ -1,0 +1,1 @@
+net.touchcapture.qr.flutterqr

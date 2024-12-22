@@ -1,0 +1,82 @@
+{
+    "logs": [
+        {
+            "outputFile": "io.flutter.plugins.firebase.firebaseremoteconfig.firebase_remote_config-mergeReleaseResources-26:/values-fa/values-fa.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Dave\\.gradle\\caches\\8.10.2\\transforms\\8dd02e97912d01fdbfdce42600ac146d\\transformed\\core-1.13.1\\res\\values-fa\\values-fa.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,154,256,355,455,556,662,779",
+                        "endColumns": "98,101,98,99,100,105,116,100",
+                        "endOffsets": "149,251,350,450,551,657,774,875"
+                    },
+                    "to": {
+                        "startLines": "2,3,4,5,6,7,8,10",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,154,256,355,455,556,662,934",
+                        "endColumns": "98,101,98,99,100,105,116,100",
+                        "endOffsets": "149,251,350,450,551,657,774,1030"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\Dave\\.gradle\\caches\\8.10.2\\transforms\\60042b990b86c86d23854403c410b997\\transformed\\jetified-play-services-basement-18.3.0\\res\\values-fa\\values.xml",
+                    "from": {
+                        "startLines": "4",
+                        "startColumns": "0",
+                        "startOffsets": "195",
+                        "endColumns": "150",
+                        "endOffsets": "345"
+                    },
+                    "to": {
+                        "startLines": "9",
+                        "startColumns": "4",
+                        "startOffsets": "779",
+                        "endColumns": "154",
+                        "endOffsets": "929"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "io.flutter.plugins.firebase.firebaseremoteconfig.firebase_remote_config-release-28:/values-fa/values-fa.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Dave\\.gradle\\caches\\8.10.2\\transforms\\8dd02e97912d01fdbfdce42600ac146d\\transformed\\core-1.13.1\\res\\values-fa\\values-fa.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,154,256,355,455,556,662,779",
+                        "endColumns": "98,101,98,99,100,105,116,100",
+                        "endOffsets": "149,251,350,450,551,657,774,875"
+                    },
+                    "to": {
+                        "startLines": "2,3,4,5,6,7,8,10",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,154,256,355,455,556,662,934",
+                        "endColumns": "98,101,98,99,100,105,116,100",
+                        "endOffsets": "149,251,350,450,551,657,774,1030"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\Dave\\.gradle\\caches\\8.10.2\\transforms\\60042b990b86c86d23854403c410b997\\transformed\\jetified-play-services-basement-18.3.0\\res\\values-fa\\values.xml",
+                    "from": {
+                        "startLines": "4",
+                        "startColumns": "0",
+                        "startOffsets": "195",
+                        "endColumns": "150",
+                        "endOffsets": "345"
+                    },
+                    "to": {
+                        "startLines": "9",
+                        "startColumns": "4",
+                        "startOffsets": "779",
+                        "endColumns": "154",
+                        "endOffsets": "929"
+                    }
+                }
+            ]
+        }
+    ]
+}
