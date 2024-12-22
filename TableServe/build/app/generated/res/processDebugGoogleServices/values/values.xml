@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="gcm_defaultSenderId" translatable="false">866243564535</string>
-    <string name="google_api_key" translatable="false">AIzaSyBzWodEQCoiKxigxPrYpvR1w18RU34w7J0</string>
-    <string name="google_app_id" translatable="false">1:866243564535:android:765971cef2c2e3b174d4f2</string>
-    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyBzWodEQCoiKxigxPrYpvR1w18RU34w7J0</string>
-    <string name="google_storage_bucket" translatable="false">tableserve-b0183.firebasestorage.app</string>
-    <string name="project_id" translatable="false">tableserve-b0183</string>
-</resources>
