@@ -631,7 +631,9 @@ class ScanScreenState extends State<ScanScreen> {
         String scannedTableId = tableId ?? scanData.code ?? '';
 
         Position userLocation = await _getCurrentLocation();
+         // 14.856759 - dave house latitude , school -  14.8322955, lynard - 14.852444
         double targetLatitude = 14.856759; // Replace with your target latitude
+         // 120.328327 - dave house longitude, school = 120.282504, lynard - 120.291917
         double targetLongitude =
             120.328327; // Replace with your target longitude
         double rangeInMeters = 500; // Define the acceptable range in meters
